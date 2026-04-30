@@ -6,11 +6,11 @@ from system.replanner import plan_path
 from visualization.grid_plot import plot_grid
 
 
-MOVE_PER_STEP = 3
-REPLAN_INTERVAL = 3
+MOVE_PER_STEP = 2         
+REPLAN_INTERVAL = 3        
 
 
-def update_environment(grid, start, goal, change_prob=0.03):
+def update_environment(grid, start, goal, change_prob=0.08):  
     for x in range(grid.width):
         for y in range(grid.height):
             node = grid.get_node(x, y)
@@ -31,7 +31,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
     plt.ion()
     plt.figure(figsize=(6, 6))
 
-    agent_position = start   # state asli agent
+    agent_position = start
     current_path = None
     current_index = 0
 
@@ -39,9 +39,18 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
 
         print(f"\n=== STEP {step} ===")
 
-        update_environment(grid, start, goal)
+        # environment lebih stabil
+        update_environment(grid, start, goal, change_prob=0.03)
 
-        # REPLAN kondisi:
+        # cek apakah sisa path masih valid
+        if current_path:
+            for i in range(current_index, len(current_path)):
+                if not current_path[i].walkable:
+                    print("🚧 PATH INVALID → FORCE REPLAN")
+                    current_path = None
+                    break
+
+        # kapan perlu replan
         need_replan = (
             current_path is None or
             current_index >= len(current_path) or
@@ -59,9 +68,9 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
 
             if path:
                 current_path = path
-                current_index = 0
+                current_index = 1   # penting: langsung maju 1 langkah
             else:
-                print("NO PATH")
+                print("NO PATH → WAIT")
                 current_path = None
 
         else:
@@ -69,7 +78,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
 
         print(f"STATUS: {status}")
 
-        # 🚶 GERAK
+        # MOVEMENT
         if current_path:
 
             for _ in range(MOVE_PER_STEP):
@@ -80,20 +89,17 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
                 next_node = current_path[current_index]
 
                 if not next_node.walkable:
-                    print("🚧 BLOCKED → FORCE REPLAN")
+                    print("BLOCKED → FORCE REPLAN")
                     current_path = None
                     break
 
-                # UPDATE posisi agent
                 agent_position = next_node
-
                 current_index += 1
 
-            partial_path = current_path[:current_index] if current_path else None
-
+        if current_path:
+            partial_path = current_path[:current_index]
         else:
-            partial_path = None
-
+            partial_path = [agent_position] 
         # RENDER
         plt.clf()
 
@@ -112,7 +118,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
             break
 
         plt.title(f"Step {step} - {status}")
-        plt.pause(0.9)
+        plt.pause(0.7)
 
     plt.ioff()
     plt.show()
