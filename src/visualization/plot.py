@@ -15,17 +15,17 @@ plt.scatter(df_new["Step"], df_new["Time"], color="blue", label="NEW_PATH")
 plt.scatter(df_cache["Step"], df_cache["Time"], color="green", label="CACHE_HIT")
 plt.scatter(df_replan["Step"], df_replan["Time"], color="red", label="REPLAN")
 
-# 🔥 tampilkan semua step di x-axis
+# tampilkan semua step di x-axis
 plt.xticks(df["Step"], rotation=45)
 
 plt.xlabel("Step")
 plt.ylabel("Execution Time")
 plt.title("Execution Time per Step")
 
-# 🔥 log scale biar perbedaan kelihatan
+# log scale biar perbedaan kelihatan
 plt.yscale("log")
 
-# 🔥 grid (biar gampang baca)
+# grid (biar gampang baca)
 plt.grid(True, which="both", linestyle="--", alpha=0.5)
 
 plt.legend(loc="best")

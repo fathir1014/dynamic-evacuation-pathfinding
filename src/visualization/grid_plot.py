@@ -5,7 +5,7 @@ import matplotlib.patches as mpatches
 
 def plot_grid(grid, path=None, full_path=None, show=True):
 
-    # 🔥 RGB biar bisa multi warna
+    # RGB biar bisa multi warna
     data = np.zeros((grid.height, grid.width, 3))
 
     for x in range(grid.width):
@@ -16,7 +16,7 @@ def plot_grid(grid, path=None, full_path=None, show=True):
                 data[y][x] = [0, 0, 0]  # ⬛ obstacle (hitam)
 
             else:
-                # 🔥 PRIORITAS warna (biar ga tabrakan)
+                # PRIORITAS warna (biar ga tabrakan)
                 if node.smoke > 0:
                     data[y][x] = [0.5, 0.5, 0.5]  # abu (smoke)
 
@@ -31,30 +31,30 @@ def plot_grid(grid, path=None, full_path=None, show=True):
 
     plt.imshow(data, origin="lower")
 
-    # 🔵 cached / planned path
+    # cached / planned path
     if full_path:
         xs = [n.x for n in full_path]
         ys = [n.y for n in full_path]
         plt.plot(xs, ys, linestyle="--", linewidth=1, color="blue", label="Planned Path")
 
-    # 🟢 path yang sedang ditempuh
+    # path yang sedang ditempuh
     if path:
         xs = [n.x for n in path]
         ys = [n.y for n in path]
         plt.plot(xs, ys, linewidth=2, color="green", label="Agent Path")
 
-        # 🔵 posisi agent
+        # posisi agent
         x = path[-1].x
         y = path[-1].y
         plt.scatter(x, y, s=100, color="cyan", label="Agent")
 
-    # 🟡 start
+    # start
     plt.scatter(0, 0, s=150, marker="o", color="orange", label="Start")
 
-    # 🔴 goal
+    # goal
     plt.scatter(grid.width - 1, grid.height - 1, s=150, marker="x", color="red", label="Goal")
 
-    # 🔥 LEGEND (biar dosen ngerti langsung)
+    # LEGEND 
     legend_patches = [
         mpatches.Patch(color='black', label='Blocked'),
         mpatches.Patch(color='gray', label='Smoke'),
@@ -81,7 +81,6 @@ def get_neighbors(self, node):
         if 0 <= x < self.width and 0 <= y < self.height:
             neighbor = self.get_node(x, y)
 
-            # 🔥 FIX UTAMA: filter obstacle
             if neighbor.walkable:
                 neighbors.append(neighbor)
 

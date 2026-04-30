@@ -25,7 +25,7 @@ def astar(grid, start, goal, risk_weight=1.0):
 
         for neighbor in grid.get_neighbors(current):
 
-            # 🔥 FIX: jangan masuk obstacle
+            # FIX: jangan masuk obstacle
             if not neighbor.walkable:
                 continue
 

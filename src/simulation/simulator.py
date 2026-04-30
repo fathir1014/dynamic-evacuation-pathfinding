@@ -31,7 +31,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
     plt.ion()
     plt.figure(figsize=(6, 6))
 
-    agent_position = start   # 🔥 state asli agent
+    agent_position = start   # state asli agent
     current_path = None
     current_index = 0
 
@@ -41,7 +41,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
 
         update_environment(grid, start, goal)
 
-        # 🔥 REPLAN kondisi:
+        # REPLAN kondisi:
         need_replan = (
             current_path is None or
             current_index >= len(current_path) or
@@ -61,7 +61,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
                 current_path = path
                 current_index = 0
             else:
-                print("❌ NO PATH")
+                print("NO PATH")
                 current_path = None
 
         else:
@@ -84,7 +84,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
                     current_path = None
                     break
 
-                # 🔥 UPDATE posisi agent (INI KUNCI)
+                # UPDATE posisi agent
                 agent_position = next_node
 
                 current_index += 1
@@ -94,7 +94,7 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
         else:
             partial_path = None
 
-        # 🎨 RENDER
+        # RENDER
         plt.clf()
 
         plot_grid(
@@ -104,15 +104,15 @@ def run_simulation(grid, start, goal, cache, steps, log_fn):
             show=False
         )
 
-        # 🎯 FINISH
+        # FINISH
         if agent_position == goal:
-            plt.title(f"🎯 GOAL REACHED at Step {step}")
+            plt.title(f"GOAL REACHED at Step {step}")
             plt.pause(2)
-            print("🎯 GOAL REACHED")
+            print("GOAL REACHED")
             break
 
         plt.title(f"Step {step} - {status}")
-        plt.pause(0.6)
+        plt.pause(0.9)
 
     plt.ioff()
     plt.show()
