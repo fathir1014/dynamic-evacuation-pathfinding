@@ -1,124 +1,134 @@
 import time
-import random
+
 import matplotlib.pyplot as plt
 
-from system.replanner import plan_path
+from simulation.agent import Agent
+from system.replanner import plan_best_path
+from system.validator import is_path_valid
+from utils.building import add_hazards
 from visualization.grid_plot import plot_grid
 
 
-MOVE_PER_STEP = 2         
-REPLAN_INTERVAL = 3        
+REPLAN_INTERVAL = 6
+HAZARD_CHANGE_INTERVAL = 15
 
 
-def update_environment(grid, start, goal, change_prob=0.08):  
-    for x in range(grid.width):
-        for y in range(grid.height):
-            node = grid.get_node(x, y)
-
-            if node == start or node == goal:
-                continue
-
-            if random.random() < change_prob:
-                node.walkable = random.random() > 0.2
-
-            node.smoke = max(0, node.smoke + random.randint(-1, 1))
-            node.debris = max(0, node.debris + random.randint(-1, 1))
-            node.crowd = max(0, node.crowd + random.randint(-1, 1))
-
-
-def run_simulation(grid, start, goal, cache, steps, log_fn):
-
+def run_simulation(grid, start, exits, cache, steps, log_fn, speed):
     plt.ion()
-    plt.figure(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(14, 7))
+    fig.subplots_adjust(right=0.82)
 
-    agent_position = start
+    agent = Agent(start)
     current_path = None
-    current_index = 0
+    goal = None
 
     for step in range(1, steps + 1):
-
         print(f"\n=== STEP {step} ===")
 
-        # environment lebih stabil
-        update_environment(grid, start, goal, change_prob=0.03)
+        if step > 1 and step % HAZARD_CHANGE_INTERVAL == 0:
+            changed = add_hazards(grid, agent.get_node(), exits)
+            current_path = None
+            cache.clear()
+            print("HAZARD_CHANGED" if changed else "HAZARD_RESET_FALLBACK")
 
-        # cek apakah sisa path masih valid
-        if current_path:
-            for i in range(current_index, len(current_path)):
-                if not current_path[i].walkable:
-                    print("🚧 PATH INVALID → FORCE REPLAN")
-                    current_path = None
-                    break
+        if current_path and not is_path_valid(current_path, agent.get_node()):
+            current_path = None
 
-        # kapan perlu replan
         need_replan = (
             current_path is None or
-            current_index >= len(current_path) or
+            agent.target_index >= len(current_path) or
             step % REPLAN_INTERVAL == 0
         )
 
         if need_replan:
-
             t0 = time.perf_counter()
-            path, status = plan_path(grid, agent_position, goal, cache)
-            t1 = time.perf_counter()
+            path, goal, status = plan_best_path(grid, agent.get_node(), exits, cache)
+            exec_time = time.perf_counter() - t0
+            log_fn(step, status, exec_time)
 
-            exec_time = t1 - t0
+import time
+
+import matplotlib.pyplot as plt
+
+from simulation.agent import Agent
+from system.replanner import plan_best_path
+from system.validator import is_path_valid
+from utils.building import add_hazards
+from visualization.grid_plot import plot_grid
+
+
+REPLAN_INTERVAL = 6
+HAZARD_CHANGE_INTERVAL = 15
+
+
+def run_simulation(grid, start, exits, cache, steps, log_fn, speed):
+    plt.ion()
+    fig, ax = plt.subplots(figsize=(12, 7))
+
+    agent = Agent(start)
+    current_path = None
+    goal = None
+
+    for step in range(1, steps + 1):
+        print(f"\n=== STEP {step} ===")
+
+        if step > 1 and step % HAZARD_CHANGE_INTERVAL == 0:
+            changed = add_hazards(grid, agent.get_node(), exits)
+            current_path = None
+            cache.clear()
+            print("HAZARD_CHANGED" if changed else "HAZARD_RESET_FALLBACK")
+
+        if current_path and not is_path_valid(current_path, agent.get_node()):
+            current_path = None
+
+        need_replan = (
+            current_path is None or
+            agent.target_index >= len(current_path) or
+            step % REPLAN_INTERVAL == 0
+        )
+
+        if need_replan:
+            t0 = time.perf_counter()
+            path, goal, status = plan_best_path(grid, agent.get_node(), exits, cache)
+            exec_time = time.perf_counter() - t0
             log_fn(step, status, exec_time)
 
             if path:
                 current_path = path
-                current_index = 1   # penting: langsung maju 1 langkah
+                agent.set_path(path)
             else:
-                print("NO PATH → WAIT")
                 current_path = None
-
         else:
             status = "MOVE_ONLY"
 
         print(f"STATUS: {status}")
 
-        # MOVEMENT
-        if current_path:
+        agent.update()
 
-            for _ in range(MOVE_PER_STEP):
+        agent_node = agent.get_node()
+        agent_pos = agent.get_pos()
+        traversed_path = current_path[:agent.target_index] if current_path else [agent_node]
 
-                if current_index >= len(current_path):
-                    break
-
-                next_node = current_path[current_index]
-
-                if not next_node.walkable:
-                    print("BLOCKED → FORCE REPLAN")
-                    current_path = None
-                    break
-
-                agent_position = next_node
-                current_index += 1
-
-        if current_path:
-            partial_path = current_path[:current_index]
-        else:
-            partial_path = [agent_position] 
-        # RENDER
-        plt.clf()
-
+        ax.clear()
         plot_grid(
             grid,
-            path=partial_path,
+            path=traversed_path,
             full_path=current_path,
-            show=False
+            agent_pos=agent_pos,
+            start=start,
+            goal=goal,
+            exits=exits,
+            show=False,
         )
 
-        # FINISH
-        if agent_position == goal:
-            plt.title(f"GOAL REACHED at Step {step}")
-            plt.pause(2)
+        if goal and agent_node == goal:
+            ax.set_title(f"GOAL REACHED at Step {step}")
+            plt.pause(1.5)
             print("GOAL REACHED")
             break
 
-        plt.title(f"Step {step} - {status}")
-        plt.pause(0.7)
+        ax.set_title(f"Step {step} - {status}")
+        plt.pause(speed)
 
     plt.ioff()
     plt.show()
