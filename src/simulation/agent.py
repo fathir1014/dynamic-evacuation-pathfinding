@@ -8,6 +8,7 @@ class Agent:
         self.path = []
         self.target_index = 0
         self.speed = 1.0
+        self.health = 100.0
 
     def set_path(self, path):
         if not path:
@@ -62,3 +63,9 @@ class Agent:
 
     def get_pos(self):
         return self.pos
+
+    def apply_damage(self, amount):
+        self.health = max(0.0, self.health - amount)
+
+    def is_alive(self):
+        return self.health > 0
