@@ -13,7 +13,6 @@ from system.cache import PathCache
 from system.validator import is_path_available
 from utils.building import add_hazards, build_building
 
-
 OUTPUT_DIR = os.path.join(os.path.dirname(os.path.dirname(__file__)), "output")
 RESULT_FILE = os.path.join(OUTPUT_DIR, "comparison_results.csv")
 SUMMARY_FILE = os.path.join(OUTPUT_DIR, "comparison_summary.csv")
