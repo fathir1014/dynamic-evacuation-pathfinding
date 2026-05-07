@@ -101,12 +101,12 @@ def plot_grid(
     ax.set_aspect("equal")
 
     legend = [
-        mpatches.Patch(color="#2b2b2b", label="Tembok statis"),
-        mpatches.Patch(color="#f7f2df", label="Area aman"),
-        mpatches.Patch(color="#7a3b22", label="Obstacle / reruntuhan"),
-        mpatches.Patch(color="#bfc3c7", label="Asap"),
-        mpatches.Patch(color="#74b9ff", label="Cairan"),
-        mpatches.Patch(color="#c77dff", label="Kerumunan"),
+        mpatches.Patch(color="#2b2b2b", label="Static wall"),
+        mpatches.Patch(color="#f7f2df", label="Safe area"),
+        mpatches.Patch(color="#7a3b22", label="Obstacle / barrier"),
+        mpatches.Patch(color="#bfc3c7", label="Smoke"),
+        mpatches.Patch(color="#74b9ff", label="Liquid"),
+        mpatches.Patch(color="#c77dff", label="Crowd"),
         mpatches.Patch(color="#12b76a", label="Exit"),
     ]
     ax.legend(
